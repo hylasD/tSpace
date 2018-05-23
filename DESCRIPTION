@@ -1,0 +1,28 @@
+Package: tSpace
+Type: Package
+Title: An algorithm for analysis of complex branching pathways
+Version: 0.1.0
+Auhor: Denis Dermadi, PhD {denis.dermadi@gmail.com}
+Maintainer: The package maintainer <yourself@somewhere.net>
+Description: More about what it does (maybe more than one line)
+    Use four spaces when indenting paragraphs within the Description.
+Imports: doParallel,
+         parallel,
+         foreach,
+         KernelKnn,
+         pracma,
+         igraph,
+         Matrix,
+         Rtsne
+Depends: doParallel,
+         parallel,
+         foreach,
+         KernelKnn,
+         pracma,
+         igraph,
+         Matrix,
+         Rtsne
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.0.1
