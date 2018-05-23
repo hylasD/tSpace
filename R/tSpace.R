@@ -42,8 +42,8 @@ tSpace <- function(df, K = 20,  L = 15, D = 'pearson_correlation', graph = 5, tr
   if(!is.numeric(core_no)){
     stop("Numer of cores is not numeric")
   }
-  if(!is.numeric(K) & !is.numeric(L) & !is.numeric(graph) & !is.numeric(wp) & !is.numeric(trajectories)){
-    stop("K, L, graph or waypoints are not numbers")
+  if(!is.numeric(K) | !is.numeric(L) | !is.numeric(graph) | !is.numeric(wp) | !is.numeric(trajectories)){
+    stop("K, L, graph, waypoints or trajectories variables are not numbers")
   }
   if(!(D %in% c('euclidean', 'manhattan', 'chebyshev', 'canberra', 'braycurtis', 'pearson_correlation', 'simple_matching_coefficient', 'minkowski',  'hamming', 'mahalanobis', 'jaccard_coefficient', 'Rao_coefficient'))){
     stop( "distance can be any of 'euclidean', 'manhattan', 'chebyshev', 'canberra', 'braycurtis', 'pearson_correlation', 'simple_matching_coefficient', 'minkowski',  'hamming', 'mahalanobis', 'jaccard_coefficient', 'Rao_coefficient'" )
