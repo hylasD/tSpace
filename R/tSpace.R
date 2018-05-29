@@ -40,7 +40,7 @@ tSpace <- function(df, K = 20,  L = 15, D = 'pearson_correlation', graph = 5, tr
   # to do
   # Evaluate inputs, fix once all is running smootly
   if(!is.numeric(core_no)){
-    stop("Numer of cores is not numeric")
+    stop("Number of cores is not numeric")
   }
   if(!is.numeric(K) | !is.numeric(L) | !is.numeric(graph) | !is.numeric(wp) | !is.numeric(trajectories)){
     stop("K, L, graph, waypoints or trajectories variables are not numbers")
