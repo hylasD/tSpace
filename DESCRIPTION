@@ -4,7 +4,7 @@ Title: An algorithm for analysis of complex branching pathways
 Version: 0.1.0
 Auhor: Denis Dermadi, PhD
 Maintainer: Denis Dermadi, PhD <denis.dermadi@gmail.com>
-Description: tSpace is an algorithm for analysis of complex branching. It is an immplementation of the trajectory space concept in which each cell is represented as a vector of trajectory distances to every other cell in the data set. Description of the algorithm: Dermadi et al. 2018 ***iii***
+Description: tSpace is an algorithm for analysis of complex branching.
 Imports: doParallel,
          parallel,
          foreach,
