@@ -13,3 +13,4 @@ l-kNN graph
 find_lknn is a helper function to reduce a principal graph to l-kNN graph
 This function works as in MATLAB, Note: try to optimize code for speed
 }
+\keyword{internal}

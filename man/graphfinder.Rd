@@ -13,3 +13,4 @@ kNN graph
 graphfinder is a helper function to find a principal graph using KernelKnn
 function as a base function
 }
+\keyword{internal}

@@ -4,6 +4,8 @@
 #' function as a base function
 #' @return kNN graph
 #' @importFrom foreach %dopar%
+#' @keywords internal
+#'
 graphfinder <- function (x, k, distance, core_n){
   # % spdists = spdists_knngraph( x, k, distance, chunk_size, verbose )
   # %
@@ -104,6 +106,7 @@ graphfinder <- function (x, k, distance, core_n){
 #' This function works as in MATLAB, Note: try to optimize code for speed
 #' @return l-kNN graph
 #' @importFrom foreach %dopar%
+#' @keywords internal
 find_lknn <- function(knn, l, core_n){
   #remove_edges <- list()
   cl <- parallel::makeCluster(core_n)
@@ -158,6 +161,7 @@ find_lknn <- function(knn, l, core_n){
 #' a matrix of trajectory distances aligned to positions of the waypoints and
 #' a matrix of original distances from the start cell and all waypoints.
 #' @importFrom foreach %dopar%
+#' @keywords internal
 
 pathfinder <- function(data, lknn, s, waypoints, voting_scheme, distance = D){
 

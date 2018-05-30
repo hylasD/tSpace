@@ -14,27 +14,27 @@
 #' ’manhattan’, ’chebyshev’, ’canberra’, ’braycurtis’,  ’simple_matching_coefficient’, ’minkowski’,
 #' ’hamming’, ’mahalanobis’, ’jaccard_coefficient’, ’Rao_coefficient’
 #' @param graph an integer specifying how many L-K-NN graphs will be used for final trajectory calculation
-#' @param trajectories an integer specifying how many trajectories will be calculatedl Default value is 1000,
+#' @param trajectories an integer specifying how many trajectories will be calculatedl. Default value is 100,
 #' see ground_truth for more details
 #' @param wp an integer specifying the number of waypoints for trajectory refinement
 #' @param ground_truth a booolean (TRUE or FALSE) specifying if trajectories are calculated for every data point.
-#' As default tSpace calculates an aproximation using 1000 trajectories, which is usually sufficient for understanding
+#' As default tSpace calculates an aproximation using 100 trajectories, which is usually sufficient for understanding
 #' of developmental relations in single cell data. If set to TRUE, calculation time will be longer
 #' and trajectories parameter will be overridden.
 #' @param weights a string specfying method to calculate the weights for refinement of the trajectory distances. Supported:
-#' uniform, linear, quadratic and exponential
+#' uniform, linear, quadratic and exponential.
 #' @param dr a string specifying type of embbeding for visualization. Options: 'pca', 'tsne' or 'both'.
 #' 'pca' embbeds trajectory space matrix in principal components,
 #' 'tsne' uses Rtsne function with parameters: perplexity = 25, max_iter = 2000, for details see documentation of Rtsne package,
 #' 'both' calculates pca and tsne
 #' @param seed an integer specifying seed for set.seed function in order to have reproducible tsne.
 #' @param core_no and integer specifying number of cores for parallelization, check how many cores your machine has and adjust accordingly
-#' @return tSpace returns a list of objects: tspace, pca and/or tsne. tspace is a data frame with pca and/or tsne embbedings
-#' of trajectory space and original data, pca contians all the components of regular pca analysis,
-#' tsne contians all componenets of the regular t-SNE analysis, see \code{\link[Rtsne:Rtsne]{Rtsne}}
+#' @return tSpace returns a list of objects: 1. a matrix of pca and/or t-SNE embbedings of trajectory space matrix and input data,
+#' 2. pca and/or tsne objects. pca object contians all the outputs of pca analysis,
+#' tsne contians all the outputs of the t-SNE analysis, see \code{\link[Rtsne:Rtsne]{Rtsne}}
 #' @importFrom foreach %dopar%
 #' @export
-tSpace <- function(df, K = 20,  L = 15, D = 'pearson_correlation', graph = 5, trajectories = 1000, wp = 20, ground_truth = F, weights = 'exponential', dr = 'pca', seed = NULL, core_no = 1){
+tSpace <- function(df, K = 20,  L = 15, D = 'pearson_correlation', graph = 5, trajectories = 100, wp = 20, ground_truth = F, weights = 'exponential', dr = 'pca', seed = NULL, core_no = 1){
 
 
   # to do

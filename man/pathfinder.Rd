@@ -20,3 +20,4 @@ this function merges two separate functions in MATALB version of the package (pa
 output is a list, that can be exported (needs modification of the main function), however tSpace
 function records only final_trajectory variable
 }
+\keyword{internal}
