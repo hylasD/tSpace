@@ -15,7 +15,7 @@ L	is an integer specifying the random L out of K-nearest-neighbors, L < K, usual
 
 distance metric 
 
-numer of graphs to calculate
+number of graphs to calculate
 
 an integer specifying how many L-K-NN graphs will be used for final trajectory calculation 
 
