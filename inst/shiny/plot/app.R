@@ -128,7 +128,7 @@ server<-(function(input, output, session){
 # })
 
   output$plot <- renderUI({
-    plotlyOutput("p", width = "1200", height = "1000")#("p")
+    plotly::plotlyOutput("p", width = "1200", height = "1000")#("p")
   })
 
   #get data object
