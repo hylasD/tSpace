@@ -5,22 +5,21 @@ Version: 0.1.0
 Auhor: Denis Dermadi, PhD
 Maintainer: Denis Dermadi, PhD <denis.dermadi@gmail.com>
 Description: tSpace is an algorithm for analysis of complex branching.
-Imports: doParallel,
-         parallel,
+Imports: colorRamps,
+         data.table,
+         doParallel,
+         dplyr,
          foreach,
-         KernelKnn,
-         pracma,
+         ggplot2,
          igraph,
+         KernelKnn,
          Matrix,
-         Rtsne
-Depends: doParallel,
          parallel,
-         foreach,
-         KernelKnn,
+         plotly,
          pracma,
-         igraph,
-         Matrix,
-         Rtsne
+         purrr,
+         Rtsne,
+         shiny
 License: GPL-2
 Encoding: UTF-8
 LazyData: true

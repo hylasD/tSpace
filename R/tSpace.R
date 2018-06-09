@@ -29,14 +29,17 @@
 #' 'both' calculates pca and tsne
 #' @param seed an integer specifying seed for set.seed function in order to have reproducible tsne.
 #' @param core_no and integer specifying number of cores for parallelization, check how many cores your machine has and adjust accordingly
-#' @return tSpace returns a list of objects: 1. a matrix of pca and/or t-SNE embbedings of trajectory space matrix and input data,
+#' @return tSpace returns a list of objects: 1. ts_file: a data frame of pca and/or t-SNE embbedings of trajectory space matrix and input data,
 #' 2. pca and/or tsne objects. pca object contians all the outputs of pca analysis,
 #' tsne contians all the outputs of the t-SNE analysis, see \code{\link[Rtsne:Rtsne]{Rtsne}}
+#' 3. trajectory space matrix with calcualted distances
 #' @importFrom foreach %dopar%
 #' @export
 tSpace <- function(df, K = 20,  L = 15, D = 'pearson_correlation', graph = 5, trajectories = 100, wp = 20, ground_truth = F, weights = 'exponential', dr = 'pca', seed = NULL, core_no = 1){
 
-
+  if(any(sapply(df, function(x) is.numeric(x)) == F)){
+    stop("Check that all values in your data frame are numeric")
+  }
   # to do
   # Evaluate inputs, fix once all is running smootly
   if(!is.numeric(core_no)){
@@ -85,14 +88,16 @@ tSpace <- function(df, K = 20,  L = 15, D = 'pearson_correlation', graph = 5, tr
 
   #########
   ## Functions
-
+  cat(paste0('Finding graph'))
   knn <- graphfinder(x = df, k = K, distance = D, core_n = core_no)
   knn <- igraph::get.adjacency(igraph::graph.adjacency(Matrix::sparseMatrix(i=knn[,'I'], j=knn[,'J'], x=knn[,'D']), mode ='max', weighted = TRUE), attr = 'weight') # For comapriosn wiht MATLAB , index1 = F)
 
   graph_panel <- list()
 
+  cat(paste0('Finding trajectories in sub-graphs \nCalculation may take time, don\'t close R'))
   tic('graphs_loop')
   for(graph_iter in 1:graph){
+
     if(K != L){
       l.knn = find_lknn(knn, l = L, core_n = core_no)
       # at this stage lknn is directed graph
@@ -134,7 +139,7 @@ tSpace <- function(df, K = 20,  L = 15, D = 'pearson_correlation', graph = 5, tr
     }
     data.out = as.data.frame(cbind(Index = Index, pca_tspace$rotation, df))
 
-    tspace_obj <- list(tspace = data.out, pca_embbeding = pca_tspace)
+    tspace_obj <- list(ts_file = data.out, pca_embbeding = pca_tspace, tspace_matrix = tspace_mat)
   }
 
   if( dr == 'tsne'){
@@ -143,7 +148,7 @@ tSpace <- function(df, K = 20,  L = 15, D = 'pearson_correlation', graph = 5, tr
 
     data.out <- as.data.frame(cbind(Index = Index,tsne_tspace$Y, df))
 
-    tspace_obj <- list(tspace = data.out, tsne_embbeding = tsne_tspace)
+    tspace_obj <- list(ts_file = data.out, tsne_embbeding = tsne_tspace, tspace_matrix = tspace_mat)
   }
 
   if( dr == 'both'){
@@ -159,9 +164,8 @@ tSpace <- function(df, K = 20,  L = 15, D = 'pearson_correlation', graph = 5, tr
     set.seed(seed)
     tsne_tspace <- Rtsne::Rtsne(tspace_mat, perplexity = 25, max_iter = 2000)
     data.out = as.data.frame(cbind(Index = Index,pca_tspace$rotation, tsne_tspace$Y, df))
-    tspace_obj <- list(tspace = data.out, pca = pca_tspace, tsne = tsne_tspace)
+    tspace_obj <- list(ts_file = data.out, pca = pca_tspace, tsne = tsne_tspace, tspace_matrix = tspace_mat)
   }
-
 
   return(tspace_obj)
 
