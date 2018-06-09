@@ -4,7 +4,7 @@
 \alias{runExplorer}
 \title{runExplorer}
 \usage{
-runExplorer()
+runExplorer(type = "demo")
 }
 \description{
 Starts interactive UI for data exploration

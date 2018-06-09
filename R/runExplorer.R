@@ -1,12 +1,12 @@
 #' runExplorer
 #'
 #' Starts interactive UI for data exploration
-#'
+#' @import plotly
 #' @export
-runExplorer <- function() {
+runExplorer <- function(type = 'demo') {
 
   #if(type == 'category'){
-    appDir <- system.file("shiny", "plot", package = "tSpace")
+    appDir <- system.file("shiny", type, package = "tSpace")
     if (appDir == "") {
       stop("Could not find directory. Try re-installing `tSpace`.", call. = FALSE)
     }

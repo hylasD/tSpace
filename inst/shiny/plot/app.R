@@ -177,7 +177,7 @@ color.pal <- reactive({
 
 
   #plotting function using ggplot2
-  output$p <- renderPlotly({
+  output$p <- plotly::renderPlotly({
 
     plot.obj<-get_data()
 
