@@ -91,13 +91,12 @@ tSpace <- function(df, K = 20,  L = 15, D = 'pearson_correlation', graph = 5, tr
   cat(paste0('Finding graph'))
   knn <- graphfinder(x = df, k = K, distance = D, core_n = core_no)
   knn <- igraph::get.adjacency(igraph::graph.adjacency(Matrix::sparseMatrix(i=knn[,'I'], j=knn[,'J'], x=knn[,'D']), mode ='max', weighted = TRUE), attr = 'weight') # For comapriosn wiht MATLAB , index1 = F)
+  cat(paste0('Finding trajectories in sub-graphs \nCalculation may take time, don\'t close R'))
+
 
   graph_panel <- list()
-
-  cat(paste0('Finding trajectories in sub-graphs \nCalculation may take time, don\'t close R'))
   tic('graphs_loop')
   for(graph_iter in 1:graph){
-
     if(K != L){
       l.knn = find_lknn(knn, l = L, core_n = core_no)
       # at this stage lknn is directed graph
