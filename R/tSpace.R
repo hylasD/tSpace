@@ -1,10 +1,10 @@
 #' tSpace
 #'
 #' tSpace is the main function for trajectory analysis. The algorithm is described in the publication
-#' Dermadi et al. 2018
+#' Dermadi et al. 2018 pre-print available: doi: https://doi.org/10.1101/336313
 #' Originally, it was developed for single cell analysis, however it can be applied on any type of large data.
 #'
-#' If you use it please cite:
+#' If you use it please cite: doi: https://doi.org/10.1101/336313
 #'
 #' @param df a data frame or a matrix of expression values, which contain information on data straucture,
 #' e.g. expression of variable genes, developmentally relevant genes/proteins
