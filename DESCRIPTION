@@ -19,7 +19,8 @@ Imports: colorRamps,
          purrr,
          Rtsne,
          plotly,
-         shiny
+         shiny,
+         tictoc,
 Depends: foreach,
          plotly,
          shiny

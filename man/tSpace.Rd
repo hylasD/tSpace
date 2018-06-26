@@ -46,9 +46,9 @@ uniform, linear, quadratic and exponential.}
 }
 \value{
 tSpace returns a list of objects: 1. ts_file: a data frame of pca and/or t-SNE embbedings of trajectory space matrix and input data,
-2. pca and/or tsne objects. pca object contians all the outputs of pca analysis,
+2. pca_tspace and/or tsne_tspace: pca and/or tsne objects. pca object contians all the outputs of pca analysis,
 tsne contians all the outputs of the t-SNE analysis, see \code{\link[Rtsne:Rtsne]{Rtsne}}
-3. trajectory space matrix with calcualted distances
+3. tspace_matrix: trajectory space matrix with calculated distances
 }
 \description{
 tSpace is the main function for trajectory analysis. The algorithm is described in the publication

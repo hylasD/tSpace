@@ -30,9 +30,9 @@
 #' @param seed an integer specifying seed for set.seed function in order to have reproducible tsne.
 #' @param core_no and integer specifying number of cores for parallelization, check how many cores your machine has and adjust accordingly
 #' @return tSpace returns a list of objects: 1. ts_file: a data frame of pca and/or t-SNE embbedings of trajectory space matrix and input data,
-#' 2. pca and/or tsne objects. pca object contians all the outputs of pca analysis,
+#' 2. pca_tspace and/or tsne_tspace: pca and/or tsne objects. pca object contians all the outputs of pca analysis,
 #' tsne contians all the outputs of the t-SNE analysis, see \code{\link[Rtsne:Rtsne]{Rtsne}}
-#' 3. trajectory space matrix with calcualted distances
+#' 3. tspace_matrix: trajectory space matrix with calculated distances
 #' @importFrom foreach %dopar%
 #' @export
 tSpace <- function(df, K = 20,  L = 15, D = 'pearson_correlation', graph = 5, trajectories = 100, wp = 20, ground_truth = F, weights = 'exponential', dr = 'pca', seed = NULL, core_no = 1){
@@ -95,7 +95,7 @@ tSpace <- function(df, K = 20,  L = 15, D = 'pearson_correlation', graph = 5, tr
 
 
   graph_panel <- list()
-  tic('graphs_loop')
+  tictoc::tic('graphs_loop')
   for(graph_iter in 1:graph){
     if(K != L){
       l.knn = find_lknn(knn, l = L, core_n = core_no)
@@ -123,7 +123,7 @@ tSpace <- function(df, K = 20,  L = 15, D = 'pearson_correlation', graph = 5, tr
     graph_panel[[graph_iter]] <- tspacem
 
   }
-  time <- toc()
+  time <- tictoc::toc()
 
   arr <- array( unlist(graph_panel) , c(nrow(graph_panel[[1]]),ncol(graph_panel[[1]]),graph) )
   tspace_mat <- rowMeans( arr , dims = 2 )
