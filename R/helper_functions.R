@@ -16,8 +16,12 @@ graphfinder <- function (x, k, distance, core_n){
   # % if chunk_size is specified, x will be split to chunk_size-by-D submatrices, and the calculation will be run
   # % separately on each submatrix (in order to conserve memory).
 
-  # cut data inot chunks of 1000
-  chunk_size = 1000
+  # cut data inot chunks of 100 or 1000 if dataset is large
+  if(nrow(x) > 10000){
+    chunk_size = 1000
+  } else {
+    chunk_size = 100
+  }
 
   #shared nearest neighbour
   snn = 1
