@@ -17,10 +17,10 @@ Imports: colorRamps,
          parallel,
          pracma,
          purrr,
-         Rtsne,
          plotly,
          shiny,
          tictoc,
+         umap
 Depends: foreach,
          plotly,
          shiny

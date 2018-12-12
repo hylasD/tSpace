@@ -23,19 +23,19 @@
 #' and trajectories parameter will be overridden.
 #' @param weights a string specfying method to calculate the weights for refinement of the trajectory distances. Supported:
 #' uniform, linear, quadratic and exponential.
-#' @param dr a string specifying type of embbeding for visualization. Options: 'pca', 'tsne' or 'both'.
+#' @param dr a string specifying type of embbeding for visualization. Options: 'pca', 'umap' or 'both'.
 #' 'pca' embbeds trajectory space matrix in principal components,
-#' 'tsne' uses Rtsne function with parameters: perplexity = 25, max_iter = 2000, for details see documentation of Rtsne package,
-#' 'both' calculates pca and tsne
-#' @param seed an integer specifying seed for set.seed function in order to have reproducible tsne.
+#' 'umap' uses umap function with config parameter filled with umap.defaults modified for min_dist = 0.8 and metric = 'manhattan', for details see documentation of umap package,
+#' 'both' calculates pca and umap
+#' @param seed an integer specifying seed for set.seed function in order to have reproducible umap
 #' @param core_no and integer specifying number of cores for parallelization, check how many cores your machine has and adjust accordingly
-#' @return tSpace returns a list of objects: 1. ts_file: a data frame of pca and/or t-SNE embbedings of trajectory space matrix and input data,
+#' @return tSpace returns a list of objects: 1. ts_file: a data frame of pca and/or umap embbedings of trajectory space matrix and input data,
 #' 2. pca_tspace and/or tsne_tspace: pca and/or tsne objects. pca object contians all the outputs of pca analysis,
-#' tsne contians all the outputs of the t-SNE analysis, see \code{\link[Rtsne:Rtsne]{Rtsne}}
+#' umap contians all the outputs of the umap analysis, see \code{\link[umap:umap]{umap}}
 #' 3. tspace_matrix: trajectory space matrix with calculated distances
 #' @importFrom foreach %dopar%
 #' @export
-tSpace <- function(df, K = 20,  L = 15, D = 'pearson_correlation', graph = 5, trajectories = 100, wp = 20, ground_truth = F, weights = 'exponential', dr = 'pca', seed = NULL, core_no = 1){
+tSpace <- function(df, K = 20,  L = 15, D = 'pearson_correlation', graph = 5, trajectories = 100, wp = 20, ground_truth = F, weights = 'exponential', dr = 'pca', seed = NULL, core_no = 1, ...){
 
   if(any(sapply(df, function(x) is.numeric(x)) == F)){
     stop("Check that all values in your data frame are numeric")
@@ -54,8 +54,8 @@ tSpace <- function(df, K = 20,  L = 15, D = 'pearson_correlation', graph = 5, tr
   if(!(weights %in% c('uniform', 'linear', 'quadratic', 'exponential'))){
     stop( "weights can be any of 'uniform', 'linear', 'quadratic', 'exponential'" )
   }
-  if(!(dr %in% c('pca', 'tsne', 'both'))){
-    stop( "dimensionality reduction can be any of 'pca', 'tsne', 'both'" )
+  if(!(dr %in% c('pca', 'umap', 'both'))){
+    stop( "dimensionality reduction can be any of 'pca', 'umap', 'both'" )
   }
 
   #########################
@@ -141,13 +141,18 @@ tSpace <- function(df, K = 20,  L = 15, D = 'pearson_correlation', graph = 5, tr
     tspace_obj <- list(ts_file = data.out, pca_embbeding = pca_tspace, tspace_matrix = tspace_mat)
   }
 
-  if( dr == 'tsne'){
+  if( dr == 'umap'){
+
+      config_tspace <- umap::umap.defaults
+      config_tspace$min_dist <- 1
+      config_tspace$metric <- 'manhattan'
+
     set.seed(seed)
-    tsne_tspace <- Rtsne::Rtsne(tspace_mat, perplexity = 25, max_iter = 2000, theta)
+    umap_tspace <- umap::umap(tspace_mat, config = config_tspace)
 
-    data.out <- as.data.frame(cbind(Index = Index,tsne_tspace$Y, df))
+    data.out <- as.data.frame(cbind(Index = Index, umap_tspace$layout, df))
 
-    tspace_obj <- list(ts_file = data.out, tsne_embbeding = tsne_tspace, tspace_matrix = tspace_mat)
+    tspace_obj <- list(ts_file = data.out, umap_embbeding = umap_tspace, tspace_matrix = tspace_mat)
   }
 
   if( dr == 'both'){
@@ -160,10 +165,16 @@ tSpace <- function(df, K = 20,  L = 15, D = 'pearson_correlation', graph = 5, tr
     }
     tspace_pca = as.data.frame(pca_tspace$rotation)
 
+    config_tspace <- umap::umap.defaults
+    config_tspace$min_dist <- 1
+    config_tspace$metric <- 'manhattan'
+
     set.seed(seed)
-    tsne_tspace <- Rtsne::Rtsne(tspace_mat, perplexity = 25, max_iter = 2000)
-    data.out = as.data.frame(cbind(Index = Index,pca_tspace$rotation, tsne_tspace$Y, df))
-    tspace_obj <- list(ts_file = data.out, pca = pca_tspace, tsne = tsne_tspace, tspace_matrix = tspace_mat)
+    umap_tspace <- umap::umap(tspace_mat, config = config_tspace)
+
+    data.out <- as.data.frame(cbind(Index = Index, umap_tspace$layout, df))
+
+    tspace_obj <- list(ts_file = data.out, pca = pca_tspace, umap = umap_tspace, tspace_matrix = tspace_mat)
   }
 
   return(tspace_obj)
