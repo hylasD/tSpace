@@ -57,6 +57,9 @@ tSpace <- function(df, K = 20,  L = 15, D = 'pearson_correlation', graph = 5, tr
   if(!(dr %in% c('pca', 'umap', 'both'))){
     stop( "dimensionality reduction can be any of 'pca', 'umap', 'both'" )
   }
+  if(is.null(seed)){
+    seed <- 1111
+  }
 
   #########################
 
@@ -129,6 +132,7 @@ tSpace <- function(df, K = 20,  L = 15, D = 'pearson_correlation', graph = 5, tr
   tspace_mat <- rowMeans( arr , dims = 2 )
 
   if( dr == 'pca'){
+    #PCA calculation
     if(ncol(tspace_mat) > 20){
       set.seed(seed)
       pca_tspace <- prcomp(t(tspace_mat), rank. = 20)
@@ -136,35 +140,19 @@ tSpace <- function(df, K = 20,  L = 15, D = 'pearson_correlation', graph = 5, tr
       set.seed(seed)
       pca_tspace <- prcomp(t(tspace_mat), center = T, scale. = T)
     }
-    data.out = as.data.frame(cbind(Index = Index, pca_tspace$rotation, df))
+
+    pca_out <- pca_tspace$rotation
+    colnames(pca_out) <- paste0('tPC', seq(1, ncol(pca_out), 1))
+
+    #Shaping data output
+    data.out <- as.data.frame(cbind(Index = Index, pca_out, df))
 
     tspace_obj <- list(ts_file = data.out, pca_embbeding = pca_tspace, tspace_matrix = tspace_mat)
   }
 
   if( dr == 'umap'){
 
-      config_tspace <- umap::umap.defaults
-      config_tspace$min_dist <- 1
-      config_tspace$metric <- 'manhattan'
-
-    set.seed(seed)
-    umap_tspace <- umap::umap(tspace_mat, config = config_tspace)
-
-    data.out <- as.data.frame(cbind(Index = Index, umap_tspace$layout, df))
-
-    tspace_obj <- list(ts_file = data.out, umap_embbeding = umap_tspace, tspace_matrix = tspace_mat)
-  }
-
-  if( dr == 'both'){
-    if(ncol(tspace_mat) > 20){
-      set.seed(seed)
-      pca_tspace <- prcomp(t(tspace_mat), rank. = 20)
-    } else {
-      set.seed(seed)
-      pca_tspace <- prcomp(t(tspace_mat), center = T, scale. = T)
-    }
-    tspace_pca = as.data.frame(pca_tspace$rotation)
-
+    #UMAP calculation
     config_tspace <- umap::umap.defaults
     config_tspace$min_dist <- 1
     config_tspace$metric <- 'manhattan'
@@ -172,7 +160,42 @@ tSpace <- function(df, K = 20,  L = 15, D = 'pearson_correlation', graph = 5, tr
     set.seed(seed)
     umap_tspace <- umap::umap(tspace_mat, config = config_tspace)
 
-    data.out <- as.data.frame(cbind(Index = Index, umap_tspace$layout, df))
+    umap_out <- as.data.frame(umap_tspace$layout)
+    colnames(umap_out) <- paste0('umap', seq(1, ncol(umap_tspace$layout), 1))
+
+    #Shaping data output
+    data.out <- as.data.frame(cbind(Index = Index, umap_out, df))
+
+    tspace_obj <- list(ts_file = data.out, umap_embbeding = umap_tspace, tspace_matrix = tspace_mat)
+  }
+
+  if( dr == 'both'){
+
+    #PCA calculation
+    if(ncol(tspace_mat) > 20){
+      set.seed(seed)
+      pca_tspace <- prcomp(t(tspace_mat), rank. = 20)
+    } else {
+      set.seed(seed)
+      pca_tspace <- prcomp(t(tspace_mat), center = T, scale. = T)
+    }
+
+    pca_out <- as.data.frame(pca_tspace$rotation)
+    colnames(pca_out) <- paste0('tPC', seq(1, ncol(pca_out), 1))
+
+    #UMAP calculation
+    config_tspace <- umap::umap.defaults
+    config_tspace$min_dist <- 1
+    config_tspace$metric <- 'manhattan'
+
+    set.seed(seed)
+    umap_tspace <- umap::umap(tspace_mat, config = config_tspace)
+
+    umap_out <- as.data.frame(umap_tspace$layout)
+    colnames(umap_out) <- paste0('umap', seq(1, ncol(umap_tspace$layout), 1))
+
+    #Shaping data output
+    data.out <- as.data.frame(cbind(Index = Index, pca_out, umap_out, df))
 
     tspace_obj <- list(ts_file = data.out, pca = pca_tspace, umap = umap_tspace, tspace_matrix = tspace_mat)
   }
