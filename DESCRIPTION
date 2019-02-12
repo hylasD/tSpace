@@ -2,7 +2,7 @@ Package: tSpace
 Type: Package
 Title: An algorithm for analysis of complex branching pathways
 Version: 0.1.0
-Auhor: Denis Dermadi, PhD
+Author: Denis Dermadi, PhD
 Maintainer: Denis Dermadi, PhD <denis.dermadi@gmail.com>
 Description: tSpace is an algorithm for trajectory inference.
 Imports: colorRamps,
