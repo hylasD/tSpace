@@ -9,8 +9,13 @@ Originally, it was developed for single cell analysis, however it can be applied
 
 # Installation
 
-devtools::install_github('hylasD/tSpace')
+`devtools::install_github('hylasD/tSpace', build_vignettes=T)`
+
 
 # How to use the algorithm
 
 Vignette with a demo data is included in the package.
+
+To open tutorial on tSpace
+
+`vignette(package = 'tSpace', topic = 'introduction')`
