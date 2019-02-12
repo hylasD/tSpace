@@ -129,7 +129,7 @@ tSpace <- function(df, K = 20,  L = NULL, D = 'pearson_correlation', graph = 5, 
     parallel::stopCluster(cl)
     graph_panel[[graph_iter]] <- tspacem
 
-  if(graph_iter == graph) cat("Last sub-graph is done!\n")
+  if(graph_iter == graph) cat("\nLast sub-graph is done!")
 
   }
   time <- tictoc::toc()
