@@ -15,7 +15,7 @@ e.g. expression of variable genes, developmentally relevant genes/proteins, or s
 
 \item{K}{an integer specifying the K-nearest-neighbors}
 
-\item{L}{an integer specifying the random L out of K-nearest-neighbors, L < K, usually K = (4*L)/3}
+\item{L}{an integer specifying the random L out of K-nearest-neighbors, L < K, usually L= 0.75*K}
 
 \item{D}{a string specfying metric for distance calculation. Supported: ’euclidean’, ’pearson_correlation’,
 ’manhattan’, ’chebyshev’, ’canberra’, ’braycurtis’,  ’simple_matching_coefficient’, ’minkowski’,

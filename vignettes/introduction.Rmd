@@ -11,41 +11,13 @@ vignette: >
 
 tSpace is an algorithm for trajectory inference. Depending on the platform used (FACS, CyTOF or single cell (sc) RNAseq) tSpace requires from the user to load previously transformed expression matrix into R workspace. As a general rules, FACS and CyTOF data have to be previously cleaned and pre-processed of all the noise/artifacts, and logicle, log `log` or ashin `asinh(x)` transformed. scRNAseq data should be normalized, log or square root `sqrt(x)` transformed and scaled. Expression matrix contians cells in the rows, and measured proteins/genes in the columns.
 
-For the purpose of this tutorial we will use FACS data on T cell development in mouse thymus included in the package. To begin we load tSpace package.
+For the purpose of this tutorial, to make vignette fast, tSpace was already calculated on downsampled dataset (10000 cells) and stored in the package. We will use FACS data on T cell development in mouse thymus included in the package. 
 
-## Loading the data and simple processing
-```{r setup, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
-)
-
-library(tSpace)
-data("tcell")
-```
-
-To make calculation faster, for the purposes of this tutorial, we will down-sample the dataset to 10000 cells, and take a look at the data.
-
-```{r}
-set.seed(111)
-
-df <- tcell[sample(nrow(tcell), 10000),]
-
-head(df)
-```
-
-Because tcell dataset has already been analyzed by tSpace, it contains columns *Cluster, tPCs, Index, Cell, Size, tsne1* and *tsne2*. For a new tSpace analysis we will use only phenotypic markers that start with column 12 until 23.
-
-```{r}
-
-head(df[12:23])
-
-head(df)
-```
-## tSpace analysis 
-To start with tSpace analysis we will load tSpace package and proceed with it's main function `tSpace`, for help on tSpace function and parameters type `?tSpace`.
+## tSpace analysis introduction
+To start with tSpace analysis user has to load tSpace package and proceed with it's main function `tSpace`, for help on tSpace function and parameters type `?tSpace`.
 For the first analysis we recommend to use default values, with the exception of waypoints (wp) which for smaller complexity data can be reduced to e.g. here 15. Usually 20 is a good number.
-Dimensionaity reduction for visualizaton option (dr) is set here to **both** which will embed trajectory space matrix in PCA and UMAP. However later in this tutorial will be shown how to fine tune UMAP visualization or calcualte tSNE if user wants to use it. Seed number is recommended to type becasue of UMAP visualization consistency. If tSpace is used on multicore comuters, we recommend use of multiple cores because this will speed up calculation process significantly. 
+Dimensionaity reduction for visualizaton option (dr) is set here to **pca** which will embed trajectory space matrix in PCA. However tSpace can use UMAP for visualization purposes. Later in this tutorial we will show how to externally, post tSpace main analysis, run UMAP for visualization or calcualte tSNE if user wants to use it. If user wants to automatically calculate within tSpace we recommend to specify `seed` number becasue of UMAP visualization consistency. If tSpace is used on multicore comuters, we recommend use of multiple cores because this will speed up calculation process significantly.
+
 ### Commentary on tSpace parameters
 
 #### Waypoints and number of trajectories 
@@ -60,46 +32,62 @@ Increased number of sub-graphs (graph parameter) can potentially contribute to n
 #### Comments on metrics
 In our analysis we used Euclidean and Pearson correlation metric, all commonly used in single cell analysis. Selection of metrics is dependent on the data type. For example, Euclidean distances may over-emphasize the contribution of phenotypic markers that are very highly expressed, unless markers are scaled to a similar range prior to tSpace. Pearson metric intrinsically compensates for this, focusing on the profile shapes rather than magnitudes.
 
+To run tSpace function user needs to run in the console:
+`data(tcell)`
+Because tcell data contains ~100000 events to make tutorial shorter we recommend to downsample this demo data, however in the real analysis we do not recommend downsampling, unless dataset has more than 500000 events.
 
-```{r}
-# This calculation should be done in 20 minutes
+`tcell.down <- tcell[sample(nrow(tcell), 10000), ]`
 
-ts <- tSpace(df = df[12:23], K = 20, L = NULL, D = 'pearson_correlation', graph = 5, trajectories = 200, wp = 15, dr = 'both', seed = 1111, core_no = 2)
+Columns 12 to 23 are the actual expression values taht we want to use in analysis. In case of scRNAseq, user can use e.g. significant principal components (PCs) on the variable genes, or, the first 50 (PCs) as commonly used in tSNE.
+
+`ts <- tSpace(df = tcell.down[,12:23], K = 20, L = 15, D = 'pearson_correlation', graph = 5, trajectories = 200, wp = 15, dr = 'pca', core_no = 2)`
+
+## Loading the data and simple processing
+Here we will load, previously calcualted tSpace object `ts`, which is a list of objects: 
+
+1. ts_file: a data frame of pca and/or umap embbedings of trajectory space matrix and input data, 
+
+2. pca_tspace and/or umap_tspace: pca and/or UMAP objects. pca object contains all the outputs of pca analysis, umap contains all the outputs of the umap analysis (see umap package) 
+
+3. tspace_matrix: trajectory space matrix with calculated distances, which can be used as a *pseudotime*. These objects can be extracted by using `$` operator. 
+
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE
+)
 
 ```
 
-Output of the tSpace function is a list of objects: 1. ts_file: a data frame of pca and/or umap embbedings of trajectory space matrix and input data, 2. pca_tspace and/or umap_tspace: pca and/or UMAP objects. pca object contians all the outputs of pca analysis, umap contians all the outputs of the umap analysis, see umap 3. tspace_matrix: trajectory space matrix with calculated distances. These objects can be extracted by using `$` operator.
+```{r}
+library(tSpace)
+data("ts")
+
+```
+
+Here we extarct `ts_file` into variable `visualization`
+
+For visualization we can use either tPCs or umap coordinates, and because cells have annotations, we will use them for visualization. First we show ggplot method, and then a 3D option using `plotly` package.
 
 ```{r}
 
 visualization <- ts$ts_file
-
-head(visualization)
-
-```
-
-For visualization we can use either tPCs or umap coordinates, and becaue we have previously assigned cell annotations, we will use them for visualization. First we show ggplot method, and then a 3D option using `plotly` package.
-
-```{r}
-
-visualization$Cell <- as.factor(df$Cell)
-
 library(ggplot2)
 
-ggplot(visualization, aes(tPC1, tPC2, color = Cell))+
+ggplot(tcell, aes(tPC1_70.24, tPC2_19.95, color = Cell))+
   geom_point()+
-  scale_color_manual(values =  c('gray85', 'red', 'orange', 'blue', 'limegreen', 'skyblue', '#88fcd1', '#ee00a4', 'purple', 'black', 'pink', 'gold', 'firebrick', 'green'))+
+  scale_color_manual(values =  c('gray85', 'red', 'orange', 'blue', 'limegreen', 'skyblue', '#88fcd1', '#ee00a4', 'purple', 'black', 'pink', 'gold', 'firebrick', 'green', 'slateblue'))+
   theme_classic()
 
-ggplot(visualization, aes(tPC1, tPC3, color = Cell))+
+ggplot(tcell, aes(tPC1_70.24, tPC3_4.56, color = Cell))+
   geom_point()+
-  scale_color_manual(values =  c('gray85', 'red', 'orange', 'blue', 'limegreen', 'skyblue', '#88fcd1', '#ee00a4', 'purple', 'black', 'pink', 'gold', 'firebrick', 'green'))+
+  scale_color_manual(values =  c('gray85', 'red', 'orange', 'blue', 'limegreen', 'skyblue', '#88fcd1', '#ee00a4', 'purple', 'black', 'pink', 'gold', 'firebrick', 'green', 'slateblue'))+
   theme_classic()
 
 
 library(plotly)
 
-p3d <- plot_ly(visualization, x = visualization$tPC1, y = visualization$tPC2, z = visualization$tPC3, color = visualization$Cell, colors = c('gray85', 'red', 'orange', 'blue', 'limegreen', 'skyblue', '#88fcd1', '#ee00a4', 'purple', 'black', 'pink', 'gold', 'firebrick', 'green'), marker = list(size = I(4)), type = 'scatter3d', text = ~paste("Pop: ", visualization$Cell, "<br>Index: ", visualization$Index) ) %>%  
+p3d <- plot_ly(tcell, x = tcell$tPC1_70.24, y = tcell$tPC2_19.95, z = tcell$tPC3_4.56, color = tcell$Cell, colors = c('gray85', 'red', 'orange', 'blue', 'limegreen', 'skyblue', '#88fcd1', '#ee00a4', 'purple', 'black', 'pink', 'gold', 'firebrick', 'green'), marker = list(size = I(4)), type = 'scatter3d', text = ~paste("Pop: ", tcell$Cell, "<br>Index: ", tcell$Index) ) %>%  
       layout(paper_bgcolor='transparent')
 
 p3d
@@ -109,12 +97,12 @@ p3d
 
 ## Isolation of the specific trajectory
 
-Due to downsampling, DN2 population is not anymore abundant enough to be used as a start of the trajectory. So, let's say we want to isolate a trajectory starting from DN3 population all the way to CD4 recent emigrants. 
+Let's say we want to isolate a trajectory starting from DN2 population all the way to CD4 recent emigrants. 
 
-First, We have to find trajectories that start from DN3 population. We can do that by determining which trajectories from matrix `tspace_matrix` start from the cells around trajectory start (DN3 population) using cell indices. 
+First, We have to find trajectories that start from DN2 population. We can do that by determining which trajectories from matrix `tspace_matrix` start from the cells around trajectory start (DN2 population) using cell indices. 
 ```{r}
 
-dn3.trajectories <- ts$tspace_matrix[,which(colnames(ts$tspace_matrix) %in% paste0('T_', t.dn3.cd4[which(t.dn3.cd4$tPC3 < -0.04), 'Index']))]
+dn3.trajectories <- ts$tspace_matrix[,which(colnames(ts$tspace_matrix) %in% paste0('T_', visualization[which(visualization$tPC3 < -0.04), 'Index']))]
 
 
 ggplot(visualization, aes(tPC1, tPC3, color = dn3.trajectories[,1]))+
@@ -175,3 +163,13 @@ Note 1: during smoothing some bins may not contain any cells and average values 
 
 Note 2: if option "smooth" is used output will not be bins but cubic smoothed values for single events. 
 
+## Exporting analysis files 
+As a final step, if user wants to export files as csv files, basic R function `write.csv` will store files in the working directory.    
+
+For storing of tSpace visualization: `write.csv(ts$ts_file, 'tSpace_embbeding_file.csv')`
+For storing of trajectory space matrix: `write.csv(ts$trajectory_matrix, 'tSpace_embbeding_file.csv')`
+
+Similarly, `t.dn3.cd4` and `clean.df` objects can be stored.
+
+## Running the GUI for visualization
+tSpace package has a funstion runExplorer for simple visualization of 2D and 3D plots on any data user wants to load as csv file. User just needs to run in the console command `runExplorer()`

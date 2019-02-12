@@ -9,7 +9,7 @@
 #' @param df a data frame or a matrix of expression values, which contain information on data straucture,
 #' e.g. expression of variable genes, developmentally relevant genes/proteins, or significant principal components of your data.
 #' @param K an integer specifying the K-nearest-neighbors
-#' @param L an integer specifying the random L out of K-nearest-neighbors, L < K, usually K = (4*L)/3
+#' @param L an integer specifying the random L out of K-nearest-neighbors, L < K, usually L= 0.75*K
 #' @param D a string specfying metric for distance calculation. Supported: ’euclidean’, ’pearson_correlation’,
 #' ’manhattan’, ’chebyshev’, ’canberra’, ’braycurtis’,  ’simple_matching_coefficient’, ’minkowski’,
 #' ’hamming’, ’mahalanobis’, ’jaccard_coefficient’, ’Rao_coefficient’
@@ -45,8 +45,8 @@ tSpace <- function(df, K = 20,  L = NULL, D = 'pearson_correlation', graph = 5, 
   if(!is.numeric(core_no)){
     stop("Number of cores is not numeric")
   }
-  if(!is.numeric(K) | !is.numeric(L) | !is.numeric(graph) | !is.numeric(wp) | !is.numeric(trajectories)){
-    stop("K, L, graph, waypoints or trajectories variables are not numbers")
+  if(!is.numeric(K) | !is.numeric(graph) | !is.numeric(wp) | !is.numeric(trajectories)){
+    stop("K, graph, waypoints or trajectories variables are not numbers")
   }
   if(!(D %in% c('euclidean', 'manhattan', 'chebyshev', 'canberra', 'braycurtis', 'pearson_correlation', 'simple_matching_coefficient', 'minkowski',  'hamming', 'mahalanobis', 'jaccard_coefficient', 'Rao_coefficient'))){
     stop( "distance can be any of 'euclidean', 'manhattan', 'chebyshev', 'canberra', 'braycurtis', 'pearson_correlation', 'simple_matching_coefficient', 'minkowski',  'hamming', 'mahalanobis', 'jaccard_coefficient', 'Rao_coefficient'" )
@@ -61,7 +61,7 @@ tSpace <- function(df, K = 20,  L = NULL, D = 'pearson_correlation', graph = 5, 
     seed <- 1111
   }
   if(is.null(L)){
-    L = 0.75*K
+    L = as.numeric(round(0.75*K, digits = 0))
   }
 
   #########################
@@ -103,10 +103,11 @@ tSpace <- function(df, K = 20,  L = NULL, D = 'pearson_correlation', graph = 5, 
 
 
   graph_panel <- list()
+  percentage <- seq(100/graph, 100, by = 100/graph)
   tictoc::tic('graphs_loop')
   for(graph_iter in 1:graph){
 
-    svMisc::progress(graph_iter, char = paste0('\nFinding trajectories in sub-graph ', graph_iter))
+    svMisc::progress(percentage[graph_iter], progress.bar = T)
 
     if(K != L){
       l.knn = find_lknn(knn, l = L, core_n = core_no)
