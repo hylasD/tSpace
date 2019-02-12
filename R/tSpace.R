@@ -164,7 +164,8 @@ tSpace <- function(df, K = 20,  L = NULL, D = 'pearson_correlation', graph = 5, 
 
     #UMAP calculation
     config_tspace <- umap::umap.defaults
-    config_tspace$min_dist <- 0.5
+    config_tspace$n_neighbors <- 7
+    config_tspace$min_dist <- 0.2
     config_tspace$metric <- 'manhattan'
 
     set.seed(seed)
@@ -195,7 +196,8 @@ tSpace <- function(df, K = 20,  L = NULL, D = 'pearson_correlation', graph = 5, 
 
     #UMAP calculation
     config_tspace <- umap::umap.defaults
-    config_tspace$min_dist <- 0.5
+    config_tspace$n_neighbors <- 7
+    config_tspace$min_dist <- 0.2
     config_tspace$metric <- 'manhattan'
 
     set.seed(seed)
