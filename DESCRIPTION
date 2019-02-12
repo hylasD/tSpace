@@ -4,7 +4,7 @@ Title: An algorithm for analysis of complex branching pathways
 Version: 0.1.0
 Auhor: Denis Dermadi, PhD
 Maintainer: Denis Dermadi, PhD <denis.dermadi@gmail.com>
-Description: tSpace is an algorithm for analysis of complex branching.
+Description: tSpace is an algorithm for trajectory inference.
 Imports: colorRamps,
          data.table,
          doParallel,
@@ -19,6 +19,7 @@ Imports: colorRamps,
          purrr,
          plotly,
          shiny,
+         svMisc,
          tictoc,
          umap
 Depends: foreach,
@@ -27,4 +28,8 @@ Depends: foreach,
 License: GPL-2
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.1
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

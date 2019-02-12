@@ -7,7 +7,7 @@
 #' If you use it please cite: doi: https://doi.org/10.1101/336313
 #'
 #' @param df a data frame or a matrix of expression values, which contain information on data straucture,
-#' e.g. expression of variable genes, developmentally relevant genes/proteins
+#' e.g. expression of variable genes, developmentally relevant genes/proteins, or significant principal components of your data.
 #' @param K an integer specifying the K-nearest-neighbors
 #' @param L an integer specifying the random L out of K-nearest-neighbors, L < K, usually K = (4*L)/3
 #' @param D a string specfying metric for distance calculation. Supported: ’euclidean’, ’pearson_correlation’,
@@ -30,12 +30,12 @@
 #' @param seed an integer specifying seed for set.seed function in order to have reproducible umap
 #' @param core_no and integer specifying number of cores for parallelization, check how many cores your machine has and adjust accordingly
 #' @return tSpace returns a list of objects: 1. ts_file: a data frame of pca and/or umap embbedings of trajectory space matrix and input data,
-#' 2. pca_tspace and/or tsne_tspace: pca and/or tsne objects. pca object contians all the outputs of pca analysis,
+#' 2. pca_tspace and/or umap_tspace: pca and/or UMAP objects. pca object contians all the outputs of pca analysis,
 #' umap contians all the outputs of the umap analysis, see \code{\link[umap:umap]{umap}}
 #' 3. tspace_matrix: trajectory space matrix with calculated distances
 #' @importFrom foreach %dopar%
 #' @export
-tSpace <- function(df, K = 20,  L = 15, D = 'pearson_correlation', graph = 5, trajectories = 100, wp = 20, ground_truth = F, weights = 'exponential', dr = 'pca', seed = NULL, core_no = 1, ...){
+tSpace <- function(df, K = 20,  L = NULL, D = 'pearson_correlation', graph = 5, trajectories = 200, wp = 20, ground_truth = F, weights = 'exponential', dr = 'pca', seed = NULL, core_no = 1, ...){
 
   if(any(sapply(df, function(x) is.numeric(x)) == F)){
     stop("Check that all values in your data frame are numeric")
@@ -60,6 +60,9 @@ tSpace <- function(df, K = 20,  L = 15, D = 'pearson_correlation', graph = 5, tr
   if(is.null(seed)){
     seed <- 1111
   }
+  if(is.null(L)){
+    L = 0.75*K
+  }
 
   #########################
 
@@ -73,6 +76,7 @@ tSpace <- function(df, K = 20,  L = 15, D = 'pearson_correlation', graph = 5, tr
     s <- numPop
 
     trajectories <- length(numPop)
+
     Index <- numPop
   } else {
     numPop <- kmeans(df, centers = trajectories, iter.max = 10000)
@@ -91,15 +95,19 @@ tSpace <- function(df, K = 20,  L = 15, D = 'pearson_correlation', graph = 5, tr
 
   #########
   ## Functions
-  cat(paste0('Finding graph'))
+  cat(paste0('Step 1:Finding graph'))
   knn <- graphfinder(x = df, k = K, distance = D, core_n = core_no)
   knn <- igraph::get.adjacency(igraph::graph.adjacency(Matrix::sparseMatrix(i=knn[,'I'], j=knn[,'J'], x=knn[,'D']), mode ='max', weighted = TRUE), attr = 'weight') # For comapriosn wiht MATLAB , index1 = F)
-  cat(paste0('\nFinding trajectories in sub-graphs \nCalculation may take time, don\'t close R'))
+
+  cat(paste0('\nStep 2: Finding trajectories in sub-graphs \nCalculation may take time, don\'t close R'))
 
 
   graph_panel <- list()
   tictoc::tic('graphs_loop')
   for(graph_iter in 1:graph){
+
+    svMisc::progress(graph_iter, char = paste0('\nFinding trajectories in sub-graph ', graph_iter))
+
     if(K != L){
       l.knn = find_lknn(knn, l = L, core_n = core_no)
       # at this stage lknn is directed graph
@@ -111,25 +119,26 @@ tSpace <- function(df, K = 20,  L = 15, D = 'pearson_correlation', graph = 5, tr
     cl <- parallel::makeCluster(core_no)
     doParallel::registerDoParallel(cl)
 
-    tspacem <- foreach::foreach(i = 1:trajectories, .combine = cbind, .packages = c('igraph', 'Matrix', 'KernelKnn', 'pracma')) %dopar%{  # follwing ' , .export="pathfinder" ' used to be here
-      #for(tt in 1:trajectories){
+    tspacem <- foreach::foreach(i = 1:trajectories, .combine = cbind, .packages = c('igraph', 'Matrix', 'KernelKnn', 'pracma')) %dopar%{
       s_c = as.numeric(s[i])
       tspacem <- pathfinder(data = df, lknn = l.knn, s = s_c, waypoints = wp, voting_scheme = weights, distance = D)$final_trajectory
-      #test <- pathFinder(traj = test, voting_scheme = 'exponential')
 
-      #tspacem <- pathFinder(traj = test)$final_trajectory #NULL #real shit of a function to be worked on, add all parameters from
-      # tspacem[,tt] <- pathFinder(traj = test)$final_trajectory #NULL #real shit of a function to be worked on, add all parameters from
-      #waypoints_paths
     }
 
     parallel::stopCluster(cl)
     graph_panel[[graph_iter]] <- tspacem
+
+  if(graph_iter == graph) cat("Last sub-graph is done!\n")
 
   }
   time <- tictoc::toc()
 
   arr <- array( unlist(graph_panel) , c(nrow(graph_panel[[1]]),ncol(graph_panel[[1]]),graph) )
   tspace_mat <- rowMeans( arr , dims = 2 )
+
+  colnames(tspace_mat) <- paste0('T_', s)
+
+  cat(paste0('\nStep 3: Low dimensionality embbeding for visualization step'))
 
   if( dr == 'pca'){
     #PCA calculation
@@ -154,7 +163,7 @@ tSpace <- function(df, K = 20,  L = 15, D = 'pearson_correlation', graph = 5, tr
 
     #UMAP calculation
     config_tspace <- umap::umap.defaults
-    config_tspace$min_dist <- 1
+    config_tspace$min_dist <- 0.5
     config_tspace$metric <- 'manhattan'
 
     set.seed(seed)
@@ -185,7 +194,7 @@ tSpace <- function(df, K = 20,  L = 15, D = 'pearson_correlation', graph = 5, tr
 
     #UMAP calculation
     config_tspace <- umap::umap.defaults
-    config_tspace$min_dist <- 1
+    config_tspace$min_dist <- 0.5
     config_tspace$metric <- 'manhattan'
 
     set.seed(seed)

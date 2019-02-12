@@ -8,16 +8,15 @@
 #' @param n an integer specifying number of the bins along the trajectory, the higher the number the fewer cells within the bin.
 #' If n = NULL, function will bin all the cells with the same distance into common bin. For this feature it may be useful to round decimal
 #' values in trajectory vector.
-#' @param stat a string defining to calculate the first derivative ('slope'), median ('median') or
-#' arithmetic ('mean') mean statistics. The default is median.
-#' @param qu1 a percentage defining the quantile which will be the right border of the first bin. Default is NULL.
-#' @param qu2 a percentage defining the quantile which will be the left border of the last bin. Default is NULL.
+#' @param stat a string defining to calculate median ('median'),
+#' mean ('mean') or quibic spline ('smooth'). The default is median.
+#' @param trim a boolean, TRUE or FALSE, if TRUE the first bin will have borders `<min(distance), 0.05*max(distance)]` and the last one `<0.95*max(distance), max(distance)]`, set as default to FALSE
 #' @return This function returns data frame in which cells are binned along the trajectory and expressions are
 #' summarized by selected statistics.
 #' @importFrom foreach %dopar%
 #' @export
 #'
-bin.trajectory <- function(x, trajectory, n=NULL, stat='median', qu1=NULL, qu2=NULL, ...){
+bin.trajectory <- function(x, trajectory, n=NULL, stat='median', trim = FALSE, ...){
 
   #Check the type of the variables
   if(class(x) != "data.frame"){
@@ -40,26 +39,21 @@ bin.trajectory <- function(x, trajectory, n=NULL, stat='median', qu1=NULL, qu2=N
   if(nrow(x) != length(trajectory)){
     stop("Size of your data frame and length of the trajectory do not match.")
   }
-  #if(sm == TRUE){
-  if(is.null(qu2) == FALSE){
-    if(class(qu2) != "numeric"){
-      stop("qu2 is not a number, choose NULL or a positive integer between 0 and 1. Check documentation.")
-    }
-  }
-  if(is.null(qu1) == FALSE){
-    if(class(qu1) != "numeric"){
-      stop("qu1 is not a number, choose NULL or a positive integer between 0 and 1. Check documentation.")
-    }
-  }
-    # if(is.null(qu2) == TRUE & is.null(qu1) == FALSE){
-    #   qu2 <- 1 - qu1
-    # }
-    # if(is.null(qu2) == TRUE & is.null(qu1) == TRUE){
-    #   qu1 <- 0
-    #   qu2 <- 0
-    # }
 
-  #}
+  if(trim == TRUE){
+  # if(is.null(qu2) == FALSE){
+  #   if(class(qu2) != "numeric"){
+  #     stop("qu2 is not a number, choose NULL or a positive integer between 0 and 1. Check documentation.")
+  #   }
+  # }
+  # if(is.null(qu1) == FALSE){
+  #   if(class(qu1) != "numeric"){
+  #     stop("qu1 is not a number, choose NULL or a positive integer between 0 and 1. Check documentation.")
+  #   }
+  # }
+    qu2 <- 0.95
+    qu1 <- 0.05
+    }
 
   # Order cells based on trajectory distance
 
@@ -79,9 +73,8 @@ bin.trajectory <- function(x, trajectory, n=NULL, stat='median', qu1=NULL, qu2=N
     }
   }
 
-
   # numeric only data frame
-  x <- x[-which(sapply(x, function(x) is.numeric(x)) == FALSE)]
+  x <- x[,sapply(x, function(x) is.numeric(x))]
 
   # Determinig window & splitting data into intervals based on trajectory distances
   if(is.null(n) == TRUE){
@@ -90,7 +83,7 @@ bin.trajectory <- function(x, trajectory, n=NULL, stat='median', qu1=NULL, qu2=N
     xsf <- split(fact, f = as.factor(trajectory))
     }
   } else {
-    window <- seq(quantile(trajectory, qu1),quantile(trajectory, qu2), max(trajectory)/n)#, max(trajectory), by = round(nrow(x)/n, digits = 0))
+    window <- seq(qu1*max(trajectory), qu2*max(trajectory), max(trajectory)/n)#, max(trajectory), by = round(nrow(x)/n, digits = 0))
     window <- c(min(trajectory), window, max(trajectory))
     xs <- split(x, cut(trajectory, window))
     if(ncol(fact) != 0){
@@ -122,7 +115,10 @@ bin.trajectory <- function(x, trajectory, n=NULL, stat='median', qu1=NULL, qu2=N
 
       names(temp) <- names(fact)
       }
+    }else{
+      temp <- NULL
     }
+
 
 # Numerical data
   # Median calculation
@@ -136,22 +132,23 @@ bin.trajectory <- function(x, trajectory, n=NULL, stat='median', qu1=NULL, qu2=N
       temp_num$Bins <- row.names(temp_num)
     }
   # Fitting the line in the bin, and calculating slope (beta coefficient)
-    if(stat == 'slope'){
-      traj <- split(trajectory, cut(trajectory, window))
-      temp_num <- list()
-      for(i in 1:length(xs)){
-        which(nrow(xs[[i]]) == 0)
-        temp_num[[i]] <- as.data.frame(t(apply(xs[[i]], 2, function(x, traj, i) {
-          if(length(traj[[i]]) == 0){
-            NA
-          }else{
-            coef(lm(x ~ traj[[i]]))[2]
-          }
-        }, traj, i)))
-
-      }
-      temp_num <- as.data.frame(do.call(rbind, temp_num))
-    }
+      #TO DO - code does not work properly
+  # if(stat == 'slope'){
+    #   traj <- split(trajectory, cut(trajectory, window))
+    #   temp_num <- list()
+    #   for(i in 1:length(xs)){
+    #     which(nrow(xs[[i]]) == 0)
+    #     temp_num[[i]] <- as.data.frame(t(apply(xs[[i]], 2, function(x, traj, i) {
+    #       if(length(traj[[i]]) == 0){
+    #         NA
+    #       }else{
+    #         coef(lm(x ~ traj[[i]]))[2]
+    #       }
+    #     }, traj, i)))
+    #
+    #   }
+    #   temp_num <- as.data.frame(do.call(rbind, temp_num))
+    # }
   # smoothing using qubic spline
     if(stat == 'smooth'){
       cl <- parallel::makeCluster(parallel::detectCores() - 1)
@@ -162,13 +159,11 @@ bin.trajectory <- function(x, trajectory, n=NULL, stat='median', qu1=NULL, qu2=N
       }
       parallel::stopCluster(cl)
       colnames(temp_sm) <- colnames(x)
-      #sox4_e <- smooth.spline(s2e_traj$Traj_dist_SC_Enter, s2e_traj$Sox4, cv = T)
-      temp_num <- as.data.frame(temp_sm)
-      temp <- NULL
-
+      temp.x <- smooth.spline(trajectory, x[,1], cv = T)$x
+      temp_num <- as.data.frame(cbind(temp_sm, traj.dist = temp.x))
     }
   if(is.null(temp)){
-    temp <- temp_num
+    temp <- as.data.frame(temp_num)
   }else{
     temp <- as.data.frame(cbind(temp_num, temp))
   }

@@ -4,13 +4,14 @@
 \alias{tSpace}
 \title{tSpace}
 \usage{
-tSpace(df, K = 20, L = 15, D = "pearson_correlation", graph = 5,
-  trajectories = 100, wp = 20, ground_truth = F,
-  weights = "exponential", dr = "pca", seed = NULL, core_no = 1)
+tSpace(df, K = 20, L = NULL, D = "pearson_correlation", graph = 5,
+  trajectories = 200, wp = 20, ground_truth = F,
+  weights = "exponential", dr = "pca", seed = NULL, core_no = 1,
+  ...)
 }
 \arguments{
 \item{df}{a data frame or a matrix of expression values, which contain information on data straucture,
-e.g. expression of variable genes, developmentally relevant genes/proteins}
+e.g. expression of variable genes, developmentally relevant genes/proteins, or significant principal components of your data.}
 
 \item{K}{an integer specifying the K-nearest-neighbors}
 
@@ -35,19 +36,19 @@ and trajectories parameter will be overridden.}
 \item{weights}{a string specfying method to calculate the weights for refinement of the trajectory distances. Supported:
 uniform, linear, quadratic and exponential.}
 
-\item{dr}{a string specifying type of embbeding for visualization. Options: 'pca', 'tsne' or 'both'.
+\item{dr}{a string specifying type of embbeding for visualization. Options: 'pca', 'umap' or 'both'.
 'pca' embbeds trajectory space matrix in principal components,
-'tsne' uses Rtsne function with parameters: perplexity = 25, max_iter = 2000, for details see documentation of Rtsne package,
-'both' calculates pca and tsne}
+'umap' uses umap function with config parameter filled with umap.defaults modified for min_dist = 0.8 and metric = 'manhattan', for details see documentation of umap package,
+'both' calculates pca and umap}
 
-\item{seed}{an integer specifying seed for set.seed function in order to have reproducible tsne.}
+\item{seed}{an integer specifying seed for set.seed function in order to have reproducible umap}
 
 \item{core_no}{and integer specifying number of cores for parallelization, check how many cores your machine has and adjust accordingly}
 }
 \value{
-tSpace returns a list of objects: 1. ts_file: a data frame of pca and/or t-SNE embbedings of trajectory space matrix and input data,
-2. pca_tspace and/or tsne_tspace: pca and/or tsne objects. pca object contians all the outputs of pca analysis,
-tsne contians all the outputs of the t-SNE analysis, see \code{\link[Rtsne:Rtsne]{Rtsne}}
+tSpace returns a list of objects: 1. ts_file: a data frame of pca and/or umap embbedings of trajectory space matrix and input data,
+2. pca_tspace and/or umap_tspace: pca and/or UMAP objects. pca object contians all the outputs of pca analysis,
+umap contians all the outputs of the umap analysis, see \code{\link[umap:umap]{umap}}
 3. tspace_matrix: trajectory space matrix with calculated distances
 }
 \description{
