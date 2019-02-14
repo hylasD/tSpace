@@ -26,9 +26,6 @@ In the accompanying [publication](https://doi.org/10.1101/336313), we examine (i
 #### Comments on K and L 
 Furthermore, we compare the effect of the number of sub-graphs, and varying K, L and different metrics (Euclidean and Pearson) and demonstrate the robustness of the output to K, the number of neighbors in the KNN graph, as long as K is kept reasonably low (but high enough for connectivity of the KNN graph). Intuitively large K, by increasing the number of ‘paths’ between cells, can lead to unwanted connections (short circuits) to developmentally more distant or altogether unrelated cells. We suggest to keep K small, and set the default to K=20. The parameter L defines the subset of K connections around each cell to be preserved in each of the sub-graphs, thus L must be < K. Keeping K and L small increases the sparseness of the graphs (reducing aberrant paths); but the ratio of L to K determines the independence of sub-graphs (which is also important to reduce the contribution of short-circuits). If L is kept as `NULL` tSpace will determine it as 0.75*K, a value that works well in all datasets we have analyzed. User can override that default by simply specifying L value.
 
-#### Comments on number of graphs
-Increased number of sub-graphs (graph parameter) can potentially contribute to noisy connections between cell types that are not developmentally related, however from developmental point of view, irrespective of choice of graph numbers cells are ordered correctly.
-
 #### Comments on metrics
 In our analysis we used Euclidean and Pearson correlation metric, all commonly used in single cell analysis. Selection of metrics is dependent on the data type. For example, Euclidean distances may over-emphasize the contribution of phenotypic markers that are very highly expressed, unless markers are scaled to a similar range prior to tSpace. Pearson metric intrinsically compensates for this, focusing on the profile shapes rather than magnitudes.
 
