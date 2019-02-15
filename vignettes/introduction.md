@@ -1,7 +1,7 @@
 ---
 title: "Introduction to tSpace"
 author: "Denis Dermadi"
-date: "`r Sys.Date()`"
+date: "2019-02-15"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Introduction to tSpace}
@@ -24,24 +24,20 @@ Here we will load, previously calculated tSpace object `ts`, which is a list of 
 3. tspace_matrix: trajectory space matrix with calculated distances, which can be used as a *pseudotime*. These objects can be extracted by using `$` operator. 
 
 
-```{r setup, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE
-)
 
-```
 
-```{r}
+
+```r
 library(tSpace)
 data("ts")
-
 ```
 
 Here we extract `ts_file` into variable `visualization`
 
 For visualization we can use either tPCs or umap coordinates, and because cells have annotations, we will use them for visualization. In case user does not have cell annotations, one simple way to create them is to determine cell clusters and with the help of adequate genes/proteins perform annotation. First we show ggplot method, and then a 3D option using `plotly` package.
 
-```{r fig.height=4, fig.width=8}
+
+```r
 
 visualization <- ts$ts_file
 library(ggplot2)
@@ -50,11 +46,21 @@ ggplot(visualization, aes(tPC1, tPC2, color = Cell))+
   geom_point()+
   scale_color_manual(values =  c('gray85', 'red', 'orange', 'blue', 'limegreen', 'skyblue', '#88fcd1', '#ee00a4', 'purple', 'black', 'pink', 'gold', 'firebrick', 'green', 'slateblue'))+
   theme_classic()
+```
+
+![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2-1.png)
+
+```r
 
 ggplot(visualization, aes(tPC1, tPC3, color = Cell))+
   geom_point()+
   scale_color_manual(values =  c('gray85', 'red', 'orange', 'blue', 'limegreen', 'skyblue', '#88fcd1', '#ee00a4', 'purple', 'black', 'pink', 'gold', 'firebrick', 'green', 'slateblue'))+
   theme_classic()
+```
+
+![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2-2.png)
+
+```r
 
 
 library(plotly)
@@ -63,15 +69,20 @@ p3d <- plot_ly(visualization, x = visualization$tPC1, y = visualization$tPC2, z 
       layout(paper_bgcolor='transparent')
 
 p3d
-
+## No scatter3d mode specifed:
+##   Setting the mode to markers
+##   Read more about this attribute -> https://plot.ly/r/reference/#scatter-mode
 ```
+
+![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2-3.png)
 
 
 ## Isolation of the specific trajectory
 
 Let's say we want to isolate a branch starting from DN3 population all the way to CD4 recent emigrants. Namely, due to downsampling DN2 population is lost, so we use DN3 as a start. These cells are labeled in black and can be determined by following filtering:
 
-```{r fig.height=4, fig.width=8}
+
+```r
 ggplot(visualization, aes(tPC1, tPC3, color = Cell))+
   geom_point()+
   scale_color_manual(values =  c('gray85', 'red', 'orange', 'blue', 'limegreen', 'skyblue', '#88fcd1', '#ee00a4', 'purple', 'black', 'pink', 'gold', 'firebrick', 'green', 'slateblue'))+
@@ -80,9 +91,12 @@ ggplot(visualization, aes(tPC1, tPC3, color = Cell))+
   theme_classic()
 ```
 
+![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3-1.png)
+
 Now, we have to find trajectories that start from DN3 population. We can do that by determining which trajectories from matrix `tspace_matrix` start from the cells around trajectory start (DN3 population) using cell indices. And examine distances along the selected trajectories visually.
 
-```{r fig.height=4, fig.width=8}
+
+```r
 
 dn3.trajectories <- ts$tspace_matrix[,which(colnames(ts$tspace_matrix) %in% paste0('T_', visualization[which(visualization$tPC3 > 0.027 & visualization$tPC1 < 0.01), 'Index']))]
 
@@ -91,36 +105,54 @@ ggplot(visualization, aes(tPC1, tPC3, color = dn3.trajectories[,1]))+
   geom_point()+
   scale_color_gradientn(colours = c('magenta', 'gold', 'black'))+
   theme_classic()
+```
+
+![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4-1.png)
+
+```r
 
 ggplot(visualization, aes(tPC1, tPC3, color = dn3.trajectories[,2]))+
   geom_point()+
   scale_color_gradientn(colours = c('magenta', 'gold', 'black'))+
   theme_classic()
+```
+
+![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4-2.png)
+
+```r
 
 ggplot(visualization, aes(tPC1, tPC3, color = dn3.trajectories[,3]))+
   geom_point()+
   scale_color_gradientn(colours = c('magenta', 'gold', 'black'))+
   theme_classic()
-
 ```
+
+![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4-3.png)
 
 Now, after inspection of all three isolated trajectories we see that they are pretty much concordant and we can calculate average trajectory of these three trajectories, which can be used for a heatmap that will show abundance changes of other proteins along the trajectory. 
 
 
-```{r}
+
+```r
 
 visualization$trajectory_dist <- rowMeans(dn3.trajectories)
 ```
 
 Next, we have to isolate cells that are on the desired developmental branch, without branch towards single CD8 T cells. We can do that by filtering out cells using their embeddings in tPC1 and tPC3, as shown in below figure. Here we used tPC1 and tPC3 because these two visually represent trajectories better than tPC1 and tPC2.
 
-```{r fig.height=4, fig.width=8}
+
+```r
 ggplot(visualization, aes(tPC1, tPC3, color = Cell))+
   geom_point()+
   scale_color_manual(values =  c('gray85', 'red', 'orange', 'blue', 'limegreen', 'skyblue', '#88fcd1', '#ee00a4', 'purple', 'black', 'pink', 'gold', 'firebrick', 'green'))+
   geom_vline(xintercept = -0.001)+
   geom_hline(yintercept = -0.008)+
   theme_classic()
+```
+
+![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6-1.png)
+
+```r
 
 t.dn3.cd4 <- visualization[which(visualization$tPC1 > -0.001 & visualization$tPC3 > -0.008), ]
 
@@ -128,22 +160,29 @@ ggplot(visualization, aes(tPC1, tPC3, color = 'Rest'))+
   geom_point()+
   geom_point(data = t.dn3.cd4, mapping = aes(tPC1, tPC3, color = 'Isolated trajectory'))+
   theme_classic()
-
 ```
+
+![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6-2.png)
 
 *Note 1*: Isolation of trajectories can be achieved outside the R in tools like FlowJo, JMP, by manually selecting/gating cells.
 
 t.dn3.cd4 object contains only desired cells from DN3 to CD4 T cells. To order cells based on their trajectory distances and perform smoothing of the expression values along the isolated developmental sequence we will use a helper function `bin.trajectory`. For detailed description of the function and parameters check out`'?bin.trajectory`. 
 
-```{r, warning = FALSE, fig.height=4, fig.width=4}
+
+```r
 
 smooth.df <- bin.trajectory(x = t.dn3.cd4[,22:34], trajectory = t.dn3.cd4$trajectory_dist, n = 250, trim=T, stat = 'median')
+## Some of the factor variables merged together in summarization process,
+## because there was no clear over representation of one.
+##                 
+## Please check your factor columns and labels.
 
 clean.df <- smooth.df[!is.na(smooth.df[,1]),]
 
 heatmap(as.matrix(t(clean.df[,1:12])), Rowv = NA, Colv = NA, scale = 'none', col = cm.colors(12))
-
 ```
+
+![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7-1.png)
 
 *Note 2*: During smoothing some bins may not contain any cells and average values will be NA, because of that we remove these rows `!is.na(smooth.df[,1])`. 
 
@@ -184,7 +223,8 @@ In our analysis we used Euclidean and Pearson correlation metric, all commonly u
 
 Trajectory matrix can be visualized outside tSpace function. UMAP with default parameters is incorporated in tSpace function, however user may want to play with parameters like min_dis and metric. For this step we will extract `tspace_matrix` form `ts` object and analyze with UMAP
 
-```{r fig.height=4, fig.width=8}
+
+```r
 library(umap)
 
 
@@ -205,9 +245,9 @@ ggplot(visualization, aes(umap1, umap2, color = Cell))+
   geom_point()+
   scale_color_manual(values =  c('gray85', 'red', 'orange', 'blue', 'limegreen', 'skyblue', '#88fcd1', '#ee00a4', 'purple', 'black', 'pink', 'gold', 'firebrick', 'green'))+
   theme_classic()
-
-
 ```
+
+![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8-1.png)
 
 
 ## Running the GUI for visualization
