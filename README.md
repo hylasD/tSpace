@@ -1,4 +1,4 @@
-# tSpace algorithm for unsupervised deteremination of multiple developmental branches in single cell data
+# tSpace algorithm for unsupervised determination of multiple developmental branches in single cell data
 By Denis Dermadi
 
 Description
@@ -13,7 +13,11 @@ To install tSpace you need devtools package, which can be installed by running c
 
 `install.packages("devtools")`
 
-`devtools::install_github('hylasD/tSpace', build_vignettes=T)`
+If devtools are already installed, or after devtools installation please run code:
+
+`devtools::install_github('hylasD/tSpace', build = TRUE, build_opts = c("--no-resave-data", "--no-manual"), force = T)`
+
+tSpace depends on several packages, at the present moment `igraph` installation has some issues on iOS and Linux, probably related to gcc compilers. If you run in to installation issues, try to install older versions of `igraph` prior to `tSpace` installation.
 
 
 # How to use the algorithm

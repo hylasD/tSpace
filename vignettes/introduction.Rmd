@@ -9,7 +9,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-tSpace is an algorithm for trajectory inference. Depending on the platform used (FACS, CyTOF or single cell (sc) RNAseq) tSpace requires from the user to load previously transformed expression matrix into R workspace or selected principal componenets on variable genes e.g. significant principal components (PCs) on the variable genes, or, the first 50 (PCs) as commonly used in tSNE. As a general rule, FACS and CyTOF data have to be previously cleaned and pre-processed of all the noise/artifacts, and logicle, log `log` or ashin `asinh(x)` transformed. scRNAseq data should be normalized, log or square root `sqrt(x)` transformed and scaled. Expression matrix contains cells in the rows, and measured proteins/genes in the columns.
+tSpace is an algorithm for trajectory inference. Depending on the platform used (FACS, CyTOF or single cell (sc) RNAseq) tSpace requires from the user to load previously transformed expression matrix into R workspace or selected principal components on variable genes e.g. significant principal components (PCs) on the variable genes, or, the first 50 (PCs) as commonly used in tSNE. As a general rule, FACS and CyTOF data have to be previously cleaned and pre-processed of all the noise/artifacts, and logicle, log `log` or ashin `asinh(x)` transformed. scRNAseq data should be normalized, log or square root `sqrt(x)` transformed and scaled. Expression matrix contains cells in the rows, and measured proteins/genes in the columns.
 
 For the purpose of this tutorial, to make vignette fast, tSpace was already calculated on downsampled dataset (10000 cells) and stored in the package. We will use FACS data on T cell development in mouse thymus included in the package. In the real analysis we do not recommend downsampling, unless dataset has more than 500000 events.
 
@@ -39,7 +39,7 @@ data("ts")
 
 Here we extract `ts_file` into variable `visualization`
 
-For visualization we can use either tPCs or umap coordinates, and because cells have annotations, we will use them for visualization. In case user does not have cell annotations, one simple way to create them is to determine cell clusters and with the help of adequate genes/proteins perform annotation. First we show ggplot method, and then a 3D option using `plotly` package.
+For visualization we can use either tPCs or umap coordinates, and because cells have annotations, we will use them for visualization. In case user does not have cell annotations, one simple way to create them is to determine cell clusters and with the help of adequate genes/proteins perform annotation. First, we show ggplot method, and then a 3D option using `plotly` package.
 
 ```{r fig.height=4, fig.width=8}
 
@@ -48,24 +48,26 @@ library(ggplot2)
 
 ggplot(visualization, aes(tPC1, tPC2, color = Cell))+
   geom_point()+
+  ggtitle('Visualization of the tSpace analysis of T cell development in tPC1 & tPC2')+
   scale_color_manual(values =  c('gray85', 'red', 'orange', 'blue', 'limegreen', 'skyblue', '#88fcd1', '#ee00a4', 'purple', 'black', 'pink', 'gold', 'firebrick', 'green', 'slateblue'))+
   theme_classic()
 
 ggplot(visualization, aes(tPC1, tPC3, color = Cell))+
   geom_point()+
+   ggtitle('Visualization of the tSpace analysis of T cell development in tPC1 & tPC3')+
   scale_color_manual(values =  c('gray85', 'red', 'orange', 'blue', 'limegreen', 'skyblue', '#88fcd1', '#ee00a4', 'purple', 'black', 'pink', 'gold', 'firebrick', 'green', 'slateblue'))+
   theme_classic()
+```
 
-
+```{r fig.height=6, fig.width=8}
 library(plotly)
 
 p3d <- plot_ly(visualization, x = visualization$tPC1, y = visualization$tPC2, z = visualization$tPC3, color = visualization$Cell, colors = c('gray85', 'red', 'orange', 'blue', 'limegreen', 'skyblue', '#88fcd1', '#ee00a4', 'purple', 'black', 'pink', 'gold', 'firebrick', 'green'), marker = list(size = I(4)), type = 'scatter3d', text = ~paste("Pop: ", visualization$Cell, "<br>Index: ", visualization$Index) ) %>%  
       layout(paper_bgcolor='transparent')
 
 p3d
-
 ```
-
+3D rendering of tSpace analysis in tPC1, tPC2 & tPC3 recapitulates thymic T cell development.
 
 ## Isolation of the specific trajectory
 
@@ -75,36 +77,44 @@ Let's say we want to isolate a branch starting from DN3 population all the way t
 ggplot(visualization, aes(tPC1, tPC3, color = Cell))+
   geom_point()+
   scale_color_manual(values =  c('gray85', 'red', 'orange', 'blue', 'limegreen', 'skyblue', '#88fcd1', '#ee00a4', 'purple', 'black', 'pink', 'gold', 'firebrick', 'green', 'slateblue'))+
+  ggtitle('Showing the filtering tresholds for isolation of DN3 population')+
   geom_vline(xintercept = 0.01)+
   geom_hline(yintercept = 0.027)+
   theme_classic()
 ```
 
-Now, we have to find trajectories that start from DN3 population. We can do that by determining which trajectories from matrix `tspace_matrix` start from the cells around trajectory start (DN3 population) using cell indices. And examine distances along the selected trajectories visually.
+Now, we have to find trajectories that start from DN3 population. We can do that by determining which trajectories from matrix `tspace_matrix` start from the cells around trajectory start (DN3 population) using cell indices. 
+
+```{r}
+
+dn3.trajectories <- ts$tspace_matrix[,which(colnames(ts$tspace_matrix) %in% paste0('T_', visualization[which(visualization$tPC3 > 0.027 & visualization$tPC1 < 0.01), 'Index']))]
+```
+
+And examine distances along the selected trajectories visually.
 
 ```{r fig.height=4, fig.width=8}
 
-dn3.trajectories <- ts$tspace_matrix[,which(colnames(ts$tspace_matrix) %in% paste0('T_', visualization[which(visualization$tPC3 > 0.027 & visualization$tPC1 < 0.01), 'Index']))]
-
-
 ggplot(visualization, aes(tPC1, tPC3, color = dn3.trajectories[,1]))+
   geom_point()+
+  ggtitle('Heatmap of distances from trajectory 1')+
   scale_color_gradientn(colours = c('magenta', 'gold', 'black'))+
   theme_classic()
 
 ggplot(visualization, aes(tPC1, tPC3, color = dn3.trajectories[,2]))+
   geom_point()+
+  ggtitle('Heatmap of distances from trajectory 2')+
   scale_color_gradientn(colours = c('magenta', 'gold', 'black'))+
   theme_classic()
 
 ggplot(visualization, aes(tPC1, tPC3, color = dn3.trajectories[,3]))+
   geom_point()+
+  ggtitle('Heatmap of distances from trajectory 2')+
   scale_color_gradientn(colours = c('magenta', 'gold', 'black'))+
   theme_classic()
 
 ```
 
-Now, after inspection of all three isolated trajectories we see that they are pretty much concordant and we can calculate average trajectory of these three trajectories, which can be used for a heatmap that will show abundance changes of other proteins along the trajectory. 
+Now, after inspection of all three isolated trajectories we see that they are pretty much concordant and we can calculate average trajectory using these three trajectories, which can be used for a heatmap that will show abundance changes of other proteins along the trajectory. 
 
 
 ```{r}
@@ -112,12 +122,13 @@ Now, after inspection of all three isolated trajectories we see that they are pr
 visualization$trajectory_dist <- rowMeans(dn3.trajectories)
 ```
 
-Next, we have to isolate cells that are on the desired developmental branch, without branch towards single CD8 T cells. We can do that by filtering out cells using their embeddings in tPC1 and tPC3, as shown in below figure. Here we used tPC1 and tPC3 because these two visually represent trajectories better than tPC1 and tPC2.
+Next, we have to isolate cells that are on the desired developmental branch, without branch towards single CD8 T cells. We can do that by filtering out cells using their embeddings in tPC1 and tPC3, as shown in below figure. Here we used tPC1 and tPC3 because these two visually represent trajectories better than tPC1 and tPC2. 
 
 ```{r fig.height=4, fig.width=8}
 ggplot(visualization, aes(tPC1, tPC3, color = Cell))+
   geom_point()+
   scale_color_manual(values =  c('gray85', 'red', 'orange', 'blue', 'limegreen', 'skyblue', '#88fcd1', '#ee00a4', 'purple', 'black', 'pink', 'gold', 'firebrick', 'green'))+
+  ggtitle('Showing the filtering tresholds for isolation of DN3 to CD4 branch')+
   geom_vline(xintercept = -0.001)+
   geom_hline(yintercept = -0.008)+
   theme_classic()
@@ -126,12 +137,14 @@ t.dn3.cd4 <- visualization[which(visualization$tPC1 > -0.001 & visualization$tPC
 
 ggplot(visualization, aes(tPC1, tPC3, color = 'Rest'))+
   geom_point()+
+  ggtitle('Examination of the isolation of DN3 to CD4 branch')+
   geom_point(data = t.dn3.cd4, mapping = aes(tPC1, tPC3, color = 'Isolated trajectory'))+
   theme_classic()
 
 ```
 
-*Note 1*: Isolation of trajectories can be achieved outside the R in tools like FlowJo, JMP, by manually selecting/gating cells.
+**Note 1**: In more complex datasets refinement of trajectory isolation may be needed by examining other tPCs (e.g. tPC1 vs tPC4 etc.)
+**Note 2**: Isolation of trajectories can be achieved outside the R in tools like [FlowJo](https://www.flowjo.com) or [JMP](https://www.jmp.com/en_us/home.html), by manually selecting/gating cells.
 
 t.dn3.cd4 object contains only desired cells from DN3 to CD4 T cells. To order cells based on their trajectory distances and perform smoothing of the expression values along the isolated developmental sequence we will use a helper function `bin.trajectory`. For detailed description of the function and parameters check out`'?bin.trajectory`. 
 
@@ -145,9 +158,9 @@ heatmap(as.matrix(t(clean.df[,1:12])), Rowv = NA, Colv = NA, scale = 'none', col
 
 ```
 
-*Note 2*: During smoothing some bins may not contain any cells and average values will be NA, because of that we remove these rows `!is.na(smooth.df[,1])`. 
+**Note 3**: During smoothing some bins may not contain any cells and average values will be NA, because of that we remove these rows `!is.na(smooth.df[,1])`. 
 
-*Note 3*: If option "smooth" is used output will not be bins but cubic smoothed values for single events. 
+**Note 3**: If option "smooth" is used output will not be bins but cubic smoothed values for single events. 
 
 ## Exporting analysis files 
 As a final step, if user wants to export files as csv files, basic R function `write.csv` will store files in the working directory.    
@@ -167,7 +180,7 @@ To run tSpace function user needs to run in the console:
 
 `ts <- tSpace(df = your_data, K = 20, L = 15, D = 'pearson_correlation', graph = 5, trajectories = 200, wp = 15, dr = 'pca', core_no = 2)`
 
-Below are comments reagrding choice of parameters.
+Below are comments regarding choice of parameters.
 
 ### Commentary on tSpace parameters
 
