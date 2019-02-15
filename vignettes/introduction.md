@@ -2,7 +2,7 @@
 title: "Introduction to tSpace"
 author: "Denis Dermadi"
 date: "2019-02-15"
-output: rmarkdown::html_vignette
+output: knitr::html_vignette
 vignette: >
   %\VignetteIndexEntry{Introduction to tSpace}
   %\VignetteEngine{knitr::knitr}
