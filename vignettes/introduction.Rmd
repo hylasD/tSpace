@@ -80,7 +80,7 @@ ggplot(visualization, aes(tPC1, tPC3, color = Cell))+
   theme_classic()
 ```
 
-Now, we have to find trajectories that start from DN3 population. We can do that by determining which trajectories from matrix `tspace_matrix` start from the cells around trajectory start (DN3 population) using cell indices. And examine *pseudotime* of selected trajectories visually.
+Now, we have to find trajectories that start from DN3 population. We can do that by determining which trajectories from matrix `tspace_matrix` start from the cells around trajectory start (DN3 population) using cell indices. And examine distances along the selected trajectories visually.
 
 ```{r fig.height=4, fig.width=8}
 
