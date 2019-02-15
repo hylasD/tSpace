@@ -108,7 +108,7 @@ ggplot(visualization, aes(tPC1, tPC3, color = dn3.trajectories[,2]))+
 
 ggplot(visualization, aes(tPC1, tPC3, color = dn3.trajectories[,3]))+
   geom_point()+
-  ggtitle('Heatmap of distances from trajectory 2')+
+  ggtitle('Heatmap of distances from trajectory 3')+
   scale_color_gradientn(colours = c('magenta', 'gold', 'black'))+
   theme_classic()
 
@@ -157,10 +157,11 @@ clean.df <- smooth.df[!is.na(smooth.df[,1]),]
 heatmap(as.matrix(t(clean.df[,1:12])), Rowv = NA, Colv = NA, scale = 'none', col = cm.colors(12))
 
 ```
+Heatmap shows abundance of measured proteins along the binned trajectory distances.
 
 **Note 3**: During smoothing some bins may not contain any cells and average values will be NA, because of that we remove these rows `!is.na(smooth.df[,1])`. 
 
-**Note 3**: If option "smooth" is used output will not be bins but cubic smoothed values for single events. 
+**Note 4**: If option "smooth" is used output will not be bins but cubic smoothed values for single events. 
 
 ## Exporting analysis files 
 As a final step, if user wants to export files as csv files, basic R function `write.csv` will store files in the working directory.    

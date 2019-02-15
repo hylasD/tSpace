@@ -63,7 +63,7 @@ ggplot(visualization, aes(tPC1, tPC3, color = dn3.trajectories[,2]))+
 
 ggplot(visualization, aes(tPC1, tPC3, color = dn3.trajectories[,3]))+
   geom_point()+
-  ggtitle('Heatmap of distances from trajectory 2')+
+  ggtitle('Heatmap of distances from trajectory 3')+
   scale_color_gradientn(colours = c('magenta', 'gold', 'black'))+
   theme_classic()
 
