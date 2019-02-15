@@ -9,6 +9,10 @@ Originally, it was developed for single cell analysis, however it can be applied
 
 # Installation
 
+To install tSpace you need devtools package, which can be installed by running code:
+
+`install.packages("devtools")`
+
 `devtools::install_github('hylasD/tSpace', build_vignettes=T)`
 
 
@@ -16,6 +20,10 @@ Originally, it was developed for single cell analysis, however it can be applied
 
 Vignette with a demo data is included in the package.
 
-To open tutorial on tSpace
+To open tutorial on tSpace from R please use function 
 
 `vignette(package = 'tSpace', topic = 'introduction')`
+
+or [online](http://denisdermadi.com/tspace-trajectory-inference-algorithm)
+
+
