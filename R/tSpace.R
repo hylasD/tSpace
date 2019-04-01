@@ -97,6 +97,19 @@ tSpace <- function(df, K = 20,  L = NULL, D = 'pearson_correlation', graph = 5, 
   ## Functions
   cat(paste0('Step 1:Finding graph'))
   knn <- graphfinder(x = df, k = K, distance = D, core_n = core_no)
+
+  # Some users experienced negative values in knn graph and core shortest path algorithm (Dijkstra) does not operate on
+  # negative distance, therefore warning message is implemented, and all non-positive values are aproximated with a zero
+  # In addition user can see which cells are involved in negative values pairs and can examine them.
+
+  if(min(knn) < 0){
+    warning(paste0("\nSome cell-cell pairs have negative distances. \nIn order for this analysis to proceed, these distances will be aproximated to zero. \nIf substantial number of cells exhibit negative distances\nplease check the original data and examine which cells are causing the issue. \nSome of these cells may be just noise and should be removed"))
+    knn[which(knn[,3] < 0), ]
+  }
+  if(min(knn) < 0){
+    knn[which(knn[,3] < 0), 3] <- 0
+  }
+
   knn <- igraph::get.adjacency(igraph::graph.adjacency(Matrix::sparseMatrix(i=knn[,'I'], j=knn[,'J'], x=knn[,'D']), mode ='max', weighted = TRUE), attr = 'weight') # For comapriosn wiht MATLAB , index1 = F)
 
   cat(paste0('\nStep 2: Finding trajectories in sub-graphs \nCalculation may take time, don\'t close R'))
@@ -134,9 +147,15 @@ tSpace <- function(df, K = 20,  L = NULL, D = 'pearson_correlation', graph = 5, 
   }
   time <- tictoc::toc()
 
-  arr <- array( unlist(graph_panel) , c(nrow(graph_panel[[1]]),ncol(graph_panel[[1]]),graph) )
-  tspace_mat <- rowMeans( arr , dims = 2 )
+  #Remove last large tspace matrix, for large datasets not to be kept in the environment
+  rm(tspacem)
 
+  tspace_mat <- array( unlist(graph_panel) , c(nrow(graph_panel[[1]]),ncol(graph_panel[[1]]),graph) )
+
+  #Remove last large tspace matrix, for large datasets not to be kept in the environment
+  rm(graph_panel)
+
+  tspace_mat <- rowMeans( tspace_mat , dims = 2 )
   colnames(tspace_mat) <- paste0('T_', s)
 
   cat(paste0('\nStep 3: Low dimensionality embbeding for visualization step'))
