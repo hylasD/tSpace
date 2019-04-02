@@ -46,10 +46,11 @@ uniform, linear, quadratic and exponential.}
 \item{core_no}{and integer specifying number of cores for parallelization, check how many cores your machine has and adjust accordingly}
 }
 \value{
-tSpace returns a list of objects: 1. ts_file: a data frame of pca and/or umap embbedings of trajectory space matrix and input data,
-2. pca_tspace and/or umap_tspace: pca and/or UMAP objects. pca object contians all the outputs of pca analysis,
+tSpace returns a list of objects: 1. **ts_file**: a data frame of pca and/or umap embbedings of trajectory space matrix and input data,
+2. pca_tspace and/or **umap_tspace**: pca and/or UMAP objects. pca object contians all the outputs of pca analysis,
 umap contians all the outputs of the umap analysis, see \code{\link[umap:umap]{umap}}
-3. tspace_matrix: trajectory space matrix with calculated distances
+3. **tspace_matrix**: trajectory space matrix with calculated distances. In case negative distances are calculated during knn graph computation, these will be aproximated to zero
+for trajectory inference completion, and reported in an object **negative_distances**, and a message will be reported in console.
 }
 \description{
 tSpace is the main function for trajectory analysis. The algorithm is described in the publication

@@ -29,10 +29,11 @@
 #' 'both' calculates pca and umap
 #' @param seed an integer specifying seed for set.seed function in order to have reproducible umap
 #' @param core_no and integer specifying number of cores for parallelization, check how many cores your machine has and adjust accordingly
-#' @return tSpace returns a list of objects: 1. ts_file: a data frame of pca and/or umap embbedings of trajectory space matrix and input data,
-#' 2. pca_tspace and/or umap_tspace: pca and/or UMAP objects. pca object contians all the outputs of pca analysis,
+#' @return tSpace returns a list of objects: 1. **ts_file**: a data frame of pca and/or umap embbedings of trajectory space matrix and input data,
+#' 2. pca_tspace and/or **umap_tspace**: pca and/or UMAP objects. pca object contians all the outputs of pca analysis,
 #' umap contians all the outputs of the umap analysis, see \code{\link[umap:umap]{umap}}
-#' 3. tspace_matrix: trajectory space matrix with calculated distances
+#' 3. **tspace_matrix**: trajectory space matrix with calculated distances. In case negative distances are calculated during knn graph computation, these will be aproximated to zero
+#' for trajectory inference completion, and reported in an object **negative_distances**, and a message will be reported in console.
 #' @importFrom foreach %dopar%
 #' @export
 tSpace <- function(df, K = 20,  L = NULL, D = 'pearson_correlation', graph = 5, trajectories = 200, wp = 20, ground_truth = F, weights = 'exponential', dr = 'pca', seed = NULL, core_no = 1, ...){
@@ -103,10 +104,8 @@ tSpace <- function(df, K = 20,  L = NULL, D = 'pearson_correlation', graph = 5, 
   # In addition user can see which cells are involved in negative values pairs and can examine them.
 
   if(min(knn) < 0){
-    warning(paste0("\nSome cell-cell pairs have negative distances. \nIn order for this analysis to proceed, these distances will be aproximated to zero. \nIf substantial number of cells exhibit negative distances\nplease check the original data and examine which cells are causing the issue. \nSome of these cells may be just noise and should be removed"))
-    knn[which(knn[,3] < 0), ]
-  }
-  if(min(knn) < 0){
+    cat(paste0("\nSome cell-cell pairs have negative distances. \nIn order for this analysis to proceed, these distances will be aproximated to zero. \nIf substantial number of cells exhibit negative distances\nplease check the original data and examine which cells are causing the issue. \nSome of these cells may be just noise and should be removed"))
+    negative.distance <- knn[which(knn[,3] < 0), ]
     knn[which(knn[,3] < 0), 3] <- 0
   }
 
@@ -176,7 +175,11 @@ tSpace <- function(df, K = 20,  L = NULL, D = 'pearson_correlation', graph = 5, 
     #Shaping data output
     data.out <- as.data.frame(cbind(Index = Index, pca_out, df))
 
-    tspace_obj <- list(ts_file = data.out, pca_embbeding = pca_tspace, tspace_matrix = tspace_mat)
+    if(exists("negative.distance") == T){
+      tspace_obj <- list(ts_file = data.out, pca_embbeding = pca_tspace, tspace_matrix = tspace_mat, negative_distances = negative.distance)
+    }else{
+      tspace_obj <- list(ts_file = data.out, pca_embbeding = pca_tspace, tspace_matrix = tspace_mat)
+    }
   }
 
   if( dr == 'umap'){
@@ -196,7 +199,11 @@ tSpace <- function(df, K = 20,  L = NULL, D = 'pearson_correlation', graph = 5, 
     #Shaping data output
     data.out <- as.data.frame(cbind(Index = Index, umap_out, df))
 
-    tspace_obj <- list(ts_file = data.out, umap_embbeding = umap_tspace, tspace_matrix = tspace_mat)
+    if(exists("negative.distance") == T){
+      tspace_obj <- list(ts_file = data.out, umap_embbeding = umap_tspace, tspace_matrix = tspace_mat, negative_distances = negative.distance)
+    }else{
+      tspace_obj <- list(ts_file = data.out, umap_embbeding = umap_tspace, tspace_matrix = tspace_mat)
+    }
   }
 
   if( dr == 'both'){
@@ -228,7 +235,11 @@ tSpace <- function(df, K = 20,  L = NULL, D = 'pearson_correlation', graph = 5, 
     #Shaping data output
     data.out <- as.data.frame(cbind(Index = Index, pca_out, umap_out, df))
 
-    tspace_obj <- list(ts_file = data.out, pca = pca_tspace, umap = umap_tspace, tspace_matrix = tspace_mat)
+    if(exists("negative.distance") == T){
+      tspace_obj <- list(ts_file = data.out, pca = pca_tspace, umap_embbeding = umap_tspace, tspace_matrix = tspace_mat, negative_distances = negative.distance)
+    }else{
+      tspace_obj <- list(ts_file = data.out, pca = pca_tspace, umap_embbeding = umap_tspace, tspace_matrix = tspace_mat)
+    }
   }
 
   return(tspace_obj)
