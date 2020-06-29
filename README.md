@@ -28,7 +28,7 @@ To open tutorial on tSpace from R please use function
 
 `vignette(package = 'tSpace', topic = 'introduction')`
 
-or [online](http://denisdermadi.com/tspace-trajectory-inference-algorithm)
+or [online](http://denisdermadi.com/tspacealgorithm)
 
 If using the algorithm please cite:
 
