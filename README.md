@@ -3,7 +3,7 @@ By Denis Dermadi
 
 Description
 
-tSpace is the main function for trajectory inference. The algorithm is described in the publication (https://doi.org/10.1101/336313) 
+tSpace is the main function for trajectory inference. The algorithm is described in the publication (https://doi.org/10.1016/j.isci.2020.100842) 
 
 Originally, it was developed for single cell analysis, however it can be applied on any type of large data.
 
@@ -30,4 +30,6 @@ To open tutorial on tSpace from R please use function
 
 or [online](http://denisdermadi.com/tspace-trajectory-inference-algorithm)
 
+If using the algorithm please cite:
 
+Dermadi D, Bscheider M, Bjegovic K, et al. Exploration of Cell Development Pathways through High-Dimensional Single Cell Analysis in Trajectory Space. iScience. 2020;23(2):100842. doi:10.1016/j.isci.2020.100842
